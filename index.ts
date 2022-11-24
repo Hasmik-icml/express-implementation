@@ -1,12 +1,9 @@
 import http, { ClientRequest, IncomingMessage, ServerResponse } from 'http';
 import event from 'events';
 
+type HandlerFunc = (req: IncomingMessage, res: ServerResponse) => Promise<void>
 
-// const emmiter = new event();
-
-type HandlerFunc = (req: ClientRequest, res: ServerResponse) => Promise<void>
-
-type Method = 'get' | 'post' | 'put';
+// type Method = 'get' | 'post' | 'put';
 
 // function methodHandler(method: Method, handler: HandlerFunc):  {
 // }
@@ -14,49 +11,25 @@ type Method = 'get' | 'post' | 'put';
 class Server {
     private server: http.Server;
     private emmiter: event;
-    lastName: string | undefined | string[]; // 
 
     constructor() {
-            this.lastName = "Gevorgyan",
-            this.emmiter = new event(),
-            this.server = http.createServer((req: IncomingMessage, res: ServerResponse): void => {
-                console.log(1111111111111, req.url);
-                console.log(22222222222222, req.headers);
-                console.log(33333333333333, req.method);
-
-                // emmiter.emit(req, req);I
-                if (req.method === 'GET') {
-                    console.log("THIS IS GET REQUEST");
-
-
-
-                    this.emmiter.emit(req.url || '', req, res);
-                }
-
-                if (req.method === 'POST') {
-                    console.log('THIS IS POST REQUEST');
-                    console.log("name === ", req.headers.name);
-
-                    // this.lastName || [] || '' = this.lastName + req.headers.name;// verevy greci
-                    this.lastName = `${this.lastName} ${req.headers.name}`; //+ ov chstacvec
-
-                    this.emmiter.emit(req.url || '', req, res);
-                }
-            });
-
+        this.emmiter = new event(),
+        this.server = http.createServer(this.requestHandler);
     }
-
-
+    
+    private requestHandler = (req: IncomingMessage, res: ServerResponse): void => {
+        console.log(111111111,`${req.method}-${req.url}`);
+        this.emmiter.emit(`${req.method}-${req.url}`, req, res);
+    }
+   
     get(url: string, handler: HandlerFunc) {
-
         console.log("get-url=", url);
-        this.emmiter.on(url, handler);
+        this.emmiter.on(`GET-${url}`, handler);
     }
 
     post(url: string, handler: HandlerFunc) {
-
-        console.log("post-url=", url);
-        this.emmiter.on(url, handler);
+        console.log("post-url=", url, `POST-${url}`);
+        this.emmiter.on(`POST-${url}`, handler);
     }
 
     listen(port: number) {
@@ -64,20 +37,28 @@ class Server {
             console.log("Server is running...");
         })
     }
+
 }
 
 const app = new Server();
 
-app.get('/get', async (req: ClientRequest, res: ServerResponse): Promise<void> => {
-    res.end("ok get");
-});
+app.get('/get', getRequestHandler);
 
-app.post('/post', async (req: ClientRequest, res: ServerResponse): Promise<void> => {
-    res.end(app.lastName);
-});
+app.post('/post', postRequestHandler);
+
+async function postRequestHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    const a = req.headers.name;
+    console.log("aa==", a);
+    res.end(a);
+}
+
+async function getRequestHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    const b = req.headers.name;
+    console.log("bb==", b);
+    res.end(b);
+}
+
 
 app.listen(3000);
-
-
 
 
