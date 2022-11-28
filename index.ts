@@ -3,6 +3,10 @@ import event from 'events';
 
 type HandlerFunc = (req: IncomingMessage, res: ServerResponse) => Promise<void>
 
+const person: {lastName: string | string[] | undefined, name?: string | string[] | undefined}= {
+    lastName: "Gevorgyan",
+}
+
 // type Method = 'get' | 'post' | 'put';
 
 // function methodHandler(method: Method, handler: HandlerFunc):  {
@@ -47,17 +51,16 @@ app.get('/get', getRequestHandler);
 app.post('/post', postRequestHandler);
 
 async function postRequestHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-    const a = req.headers.name;
-    console.log("aa==", a);
-    res.end(a);
+    person.name = req.headers.name;
+    console.log("person =", person);
+    res.end(person);
 }
 
 async function getRequestHandler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-    const b = req.headers.name;
-    console.log("bb==", b);
-    res.end(b);
+    const result = `${person.name} ${person.lastName}`;
+    console.log("name =", result);
+    res.end(result);
 }
-
 
 app.listen(3000);
 
